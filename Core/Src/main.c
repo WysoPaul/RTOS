@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-
+#include "main.h"
 #include "cmsis_os.h"
 #include "crc.h"
 #include "dma2d.h"
@@ -35,8 +35,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
-#include "main.h"
 #include "LibPerso.h"
+#include "shell.h"
 
 /* USER CODE END Includes */
 
@@ -70,7 +70,7 @@ void MX_FREERTOS_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-SemaphoreHandle_t MonSem;
+SemaphoreHandle_t MonSem, MonSemUART;
 char QMessage[20];
 QueueHandle_t  BaL1;
 
@@ -82,6 +82,24 @@ int __io_putchar(int ch)
 	HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xFFFF);
 	return ch;
 }
+
+
+
+//fonction1 reveil fonction2
+void FctBidon(void)
+{
+	int i=0;
+	printf("T1: BONJOUR\r\n");
+	while (1)
+	{
+		printf("Je suis une fonction bidon ... %d\r\n",i++);
+
+	}
+	vTaskDelete(NULL);
+}
+
+
+
 
 
 
@@ -105,6 +123,8 @@ void fonction1(void)
 	printf("T1, je me suicide x_x\r\n\n");
 	vTaskDelete(NULL);
 }
+
+
 
 //fonction2 est reveille par fonction1
 void fonction2 (void)
@@ -182,6 +202,7 @@ void Emeteur(void)
 }
 
 
+
 void Recepteur(void)
 {
 	int i=0;
@@ -215,12 +236,10 @@ void Recepteur(void)
 
 /* USER CODE END 0 */
 
-/************************************************
-  * @brief  APPLICATION ENTRY POINT
+/**
+  * @brief  The application entry point.
   * @retval int
-  *
-  ************************************************/
-
+  */
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -258,12 +277,11 @@ uint8_t message[] = {"On va commencer\r\n"};
   MX_USART1_UART_Init();
   MX_USB_OTG_HS_HCD_Init();
   MX_TIM2_Init();
-
-
   /* USER CODE BEGIN 2 */
 
-  HAL_UART_Transmit(&huart1, message, sizeof(message), 0xff);
+  //HAL_UART_Transmit(&huart1, message, sizeof(message), 0xff);
   printf("T0: Tache INIT commence\r\n");
+
 
   BaseType_t xReturned;
   TaskHandle_t xHandle = NULL;
@@ -274,39 +292,45 @@ uint8_t message[] = {"On va commencer\r\n"};
   //BaL1 = xQueueCreate( 5, sizeof( QMessage ) );
 
   //Création du Semaphore
-  //printf("T0: Creation du semaphore (vide)\r\n");
+  printf("T0: Creation du semaphore (vide)\r\n");
   //MonSem=semBCreate(SEM_Q_FIFO,SEM_EMPTY);		//Façon VxWorks
   MonSem = xSemaphoreCreateBinary();				//Façon FreeRTOS
+  MonSemUART = xSemaphoreCreateBinary();				//Façon FreeRTOS
+  shell_init();
 
 
   /* Create the task, storing the handle. */
-  printf("T0: Creation tache 1\r\n");
+
+   printf("T0: Creation tache 1\r\n");
+	  xReturned = xTaskCreate(
+					  //(void *)fonction2,       	/* Function that implements the task. */
+					  //"fonction2",     	/* Text name for the task. */
+					  //(void *)Recepteur,
+					  //"RX",
+	  	  	  	  	  (void *)FctBidon,
+			  	  	  "FctBidon",
+					  1000,      		/* Stack size in words, not bytes. */
+					  NULL,    			/* Parameter passed into the task. */
+					  p2,				/* Priority at which the task is created. */
+					  &xHandle );      /* Used to pass out the created task's handle. */
+	  if( xReturned == pdPASS )
+	  printf("T0: Tache ''Bidon'' cree avec priorite %d\r\n", p1);
+
+
+  printf("T0: Creation tache 2\r\n");
   xReturned = xTaskCreate(
-		  	  	  //(void *)fonction1,       	/* Function that implements the task. */
-				  //"fonction1",     	/* Text name for the task. */
-				  //(void *)Emeteur,
-				  //"TX",
-				  (void *)fonction3,
-				  "fonction3",
-				  1000,      		/* Stack size in words, not bytes. */
+		  	  	  //(void *)fonction2,       	/* Function that implements the task. */
+				  //"fonction2",     	/* Text name for the task. */
+		  	  	  //(void *)Recepteur,
+				  //"RX",
+		  	  	  (void*)shell_run(),
+				  "Shell_RUN",
+		  	  	  1000,      		/* Stack size in words, not bytes. */
 				  NULL,    			/* Parameter passed into the task. */
-				  p1,				/* Priority at which the task is created. */
+				  p2,				/* Priority at which the task is created. */
 				  &xHandle );      /* Used to pass out the created task's handle. */
   if( xReturned == pdPASS )
-	  printf("T0: Tache1 cree avec priorite %d\r\n", p1);
-
-//  printf("T0: Creation tache 2\r\n");
-//  xReturned = xTaskCreate(
-//		  	  	  //(void *)fonction2,       	/* Function that implements the task. */
-//				  //"fonction2",     	/* Text name for the task. */
-//		  	  	  (void *)Recepteur,
-//				  "RX",
-//		  	  	  1000,      		/* Stack size in words, not bytes. */
-//				  NULL,    			/* Parameter passed into the task. */
-//				  p2,				/* Priority at which the task is created. */
-//				  &xHandle );      /* Used to pass out the created task's handle. */
-//  if( xReturned == pdPASS )
-//	  printf("T0: Tache2 cree avec priorite %d\r\n", p2);
+	  printf("T0: Tache ''Shell RUN'' cree avec priorite %d\r\n", p2);
 
 
   printf("T0: Fin fct main x_x\r\n\n");
@@ -326,10 +350,10 @@ uint8_t message[] = {"On va commencer\r\n"};
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
-  MX_FREERTOS_Init();
+  MX_FREERTOS_Init(); 
   /* Start scheduler */
   osKernelStart();
-
+ 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */

@@ -6,14 +6,16 @@
  */
 
 #include "shell.h"
+#include "LibPerso.h"
 
 #include <stdio.h>
 
 #include "usart.h"
 #include "gpio.h"
 
+
 #define ARGC_MAX 8
-char help[] = "help";
+char help[] = "This is help message";
 
 typedef struct{
     char c;
@@ -26,6 +28,12 @@ shell_func_t shell_func_list[_SHELL_FUNC_LIST_MAX_SIZE];
 
 int dataReady = 0;
 
+
+/******************************************
+ * UART READ
+ *
+ ******************************************/
+
 char uart_read() {
 	char c;
 
@@ -33,23 +41,42 @@ char uart_read() {
 //	while (!dataReady);
 //	dataReady = 0;
 
-	while(HAL_UART_Receive(&UART_DEVICE, (uint8_t*)(&c), 1, 0xFFFFFFFF) == HAL_TIMEOUT)
-	{
-		printf("HAL_UART_Receive timeout. This should not cause any issue.\r\n");
-	}
+//	while(HAL_UART_Receive(&UART_DEVICE, (uint8_t*)(&c), 1, 0xFFFFFFFF) == HAL_TIMEOUT)
+//	{
+//		printf("HAL_UART_Receive timeout. This should not cause any issue.\r\n");
+//	}
 
+	HAL_UART_Receive_IT(&UART_DEVICE, (uint8_t*)(&c), 1);
 
 	return c;
 }
+
+
+/******************************************
+ * UART WRITE
+ *
+ ******************************************/
 
 int uart_write(char * s, uint16_t size) {
 	HAL_UART_Transmit(&UART_DEVICE, (uint8_t*)s, size, 0xFFFF);
 	return size;
 }
 
+
+/******************************************
+ * UART DATA READY
+ *
+ ******************************************/
+
 void uart_data_ready() {
 	dataReady = 1;
 }
+
+
+/******************************************
+ * SHELL HELP
+ *
+ ******************************************/
 
 int sh_help(int argc, char ** argv) {
     int i;
@@ -59,6 +86,12 @@ int sh_help(int argc, char ** argv) {
 
     return 0;
 }
+
+
+/******************************************
+ * SHELL INIT
+ *
+ ******************************************/
 
 void shell_init() {
 	printf("\r\n\r\n===== Monsieur Shell v0.2 =====\r\n");
@@ -71,6 +104,11 @@ void shell_init() {
 	}
 }
 
+/******************************************
+ * SHELL ADD
+ *
+ ******************************************/
+
 int shell_add(char c, int (* pfunc)(int argc, char ** argv), char * description) {
     if (shell_func_list_size < _SHELL_FUNC_LIST_MAX_SIZE) {
         shell_func_list[shell_func_list_size].c = c;
@@ -82,6 +120,11 @@ int shell_add(char c, int (* pfunc)(int argc, char ** argv), char * description)
 
     return -1;
 }
+
+/******************************************
+ * SHELL EXE
+ *
+ ******************************************/
 
 int shell_exec(char c, char * buf)
 {
@@ -114,6 +157,11 @@ char buf[40];
 char backspace[] = "\b \b";
 char prompt[] = "> ";
 
+
+/******************************************
+ * SHELL RUN
+ *
+ ******************************************/
 int shell_run(){
 	int reading = 0;
 	int pos = 0;
@@ -124,6 +172,7 @@ int shell_run(){
 		  reading = 1;
 
 		  while(reading){
+			  xSemaphoreTake(MonSemUART, portMAX_DELAY);
 			  char c = uart_read();
 
 			  switch (c) {

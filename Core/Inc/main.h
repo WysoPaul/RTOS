@@ -53,11 +53,7 @@ extern "C" {
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
-void fonction1(void);
-void fonction2(void);
-void fonction3(void);
-void Emeteur(void);
-void Recepteur(void);
+
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

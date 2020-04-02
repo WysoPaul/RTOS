@@ -7,9 +7,10 @@
 
 #ifndef INC_LIBPERSO_H_
 #define INC_LIBPERSO_H_
+#include "FreeRTOS.h"
 #include "semphr.h"
 
-extern SemaphoreHandle_t MonSem;
+extern SemaphoreHandle_t MonSem, MonSemUART;
 
 
 #endif /* INC_LIBPERSO_H_ */
