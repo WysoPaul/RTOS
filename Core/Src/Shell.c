@@ -46,7 +46,7 @@ char uart_read() {
 //		printf("HAL_UART_Receive timeout. This should not cause any issue.\r\n");
 //	}
 
-	HAL_UART_Receive_IT(&UART_DEVICE, (uint8_t*)(&c), 1);
+	while(HAL_OK != HAL_UART_Receive_IT(&UART_DEVICE, (uint8_t*)(&c), 1));
 
 	return c;
 }
@@ -156,7 +156,7 @@ int shell_exec(char c, char * buf)
 char buf[40];
 char backspace[] = "\b \b";
 char prompt[] = "> ";
-
+char toto[10];
 
 /******************************************
  * SHELL RUN
@@ -166,13 +166,18 @@ int shell_run(){
 	int reading = 0;
 	int pos = 0;
 
+	printf("Debut Shell_Run\r\n");
+
 	while (1)
 	{
 		  uart_write(prompt, 2);
 		  reading = 1;
 
 		  while(reading){
+			  printf("Je demande le semaphore\r\n");
+			  HAL_UART_Receive_IT(&UART_DEVICE, (uint8_t*)(&toto), 1);
 			  xSemaphoreTake(MonSemUART, portMAX_DELAY);
+			  printf("Je lit l'UART\r\n");
 			  char c = uart_read();
 
 			  switch (c) {

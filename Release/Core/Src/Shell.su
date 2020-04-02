@@ -1,5 +1,5 @@
 Shell.c:81:5:sh_help	24	static
-Shell.c:37:6:uart_read	16	static
+Shell.c:37:6:uart_read	24	static
 Shell.c:60:5:uart_write	8	static
 Shell.c:71:6:uart_data_ready	0	static
 Shell.c:112:5:shell_add	20	static

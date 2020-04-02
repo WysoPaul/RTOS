@@ -85,147 +85,18 @@ int __io_putchar(int ch)
 
 
 
-//fonction1 reveil fonction2
+//Fonction qui simule une activité...
 void FctBidon(void)
 {
 	int i=0;
 	printf("T1: BONJOUR\r\n");
 	while (1)
 	{
-		printf("Je suis une fonction bidon ... %d\r\n",i++);
+		printf(". ");
+		fflush(stdout);
+		vTaskDelay(500);
 
 	}
-	vTaskDelete(NULL);
-}
-
-
-
-
-
-
-//fonction1 reveil fonction2
-void fonction1(void)
-{
-	int i=0;
-	printf("T1: BONJOUR\r\n");
-	while (i<5)
-	{
-		printf("T1: Je fais un traaaaaaaaaaitement super Lonnnnnnnnnnnnnnnnnnng\r\n");
-		//remplir semaphore plein
-		printf("T1: Je remplis le semaphore (pour lancer l'autre tache)\r\n");
-		//semGive(MonSem);				//Façon VxWorks
-		xSemaphoreGive(MonSem);			//Façon FreeRTOS
-
-		printf("T1: J'ai (re)pris la main, je m'endore\r\n");
-		vTaskDelay(200);
-		printf ("T1: reveille %d\r\n", i++);
-	}
-	printf("T1, je me suicide x_x\r\n\n");
-	vTaskDelete(NULL);
-}
-
-
-
-//fonction2 est reveille par fonction1
-void fonction2 (void)
-{
-	int i=0;
-	printf("T2: BONJOUR\r\n");
-
-	while (i<5)
-	{
-		//prendre
-		printf("T2: J'essais de (re)prendre le semaphore...\r\n");
-		//semTake(MonSem, WAIT_FOREVER);
-		xSemaphoreTake(MonSem, portMAX_DELAY);
-		printf("T2, J'ai la main, ReCoucou %d\r\n", i++);
-		printf("T2, Je fais mon traitement (synchronise)\r\n");
-	}
-	printf("T2, je me suicide x_x\r\n\n");
-	vTaskDelete(NULL);
-}
-
-
-
-
-//--------------------------------------------
-//Fonction synchronizé avec IT du TIMER #2
-//
-void fonction3 (void)
-{
-	int i=0;
-	printf("T2: BONJOUR\r\n");
-
-	while (i<5)
-	{
-		//prendre
-		printf("T2: J'essais de (re)prendre le semaphore...\r\n");
-		xSemaphoreTake(MonSem, portMAX_DELAY);
-		HAL_GPIO_TogglePin(GPIOG, LD4_Pin);
-		printf("T2, J'ai la main #%d\r\n", i++);
-		printf("T2, Je fais mon lonnnnnng traitement (synchronise par l'IT)\r\n");
-	}
-	printf("T2, je me suicide x_x\r\n\n");
-	vTaskDelete(NULL);
-}
-
-
-
-
-
-//--------------------------------------------
-//Exo BàL
-//
-void Emeteur(void)
-{
-	int i=0;
-	char QMess1[20];
-	printf("T1: BONJOUR\r\n");
-	while (i<5)
-	{
-		//Poster un message dans la BàL
-
-		printf("T1: Je poste le message:\r\n");
-		sprintf(QMess1,"Message %d\r\n",i);
-		//QMess1 = "Mon petit Message";
-		printf(QMess1);
-
-		//remplire BAL
-		xQueueSend( BaL1, (void *) QMess1, portMAX_DELAY);
-
-		printf("T1: J'ai (re)pris la main, je m'endore pour 100\r\n\n");
-		vTaskDelay(100);
-		printf ("T1: Je me suis reveillé (#%d)\r\n", ++i);
-	}
-	printf("T1, je me suicide x_x\r\n\n");
-	vTaskDelete(NULL);
-}
-
-
-
-void Recepteur(void)
-{
-	int i=0;
-	char QMess2[20];
-	printf("T2: BONJOUR\r\n");
-
-	while (i<5)
-	{
-		//prendre
-		printf("T2: J'essais de lire la BaL ...\r\n");
-
-		//Lire BàL
-		 if (pdPASS == xQueueReceive( BaL1, (void *) QMess2, 0)){
-			 printf("T2, J'ai récupérer le message suivant:\r\n");
-			 printf("%s", QMess2);
-		 }
-		 else{
-			 printf("T2, Plus de message => Je m'endors pour 300\r\n\n");
-			 vTaskDelay(300);
-			 printf("T2: Je me suis reveillé (#%d).\r\n",++i);
-		 }
-	}
-	printf("T2, je me suicide x_x\r\n\n");
 	vTaskDelete(NULL);
 }
 
@@ -260,9 +131,6 @@ uint8_t message[] = {"On va commencer\r\n"};
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
-
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -285,8 +153,8 @@ uint8_t message[] = {"On va commencer\r\n"};
 
   BaseType_t xReturned;
   TaskHandle_t xHandle = NULL;
-  int p1=1;
-  int p2=2;
+  int p1=3;
+  int p2=5;
 
   //Création d'un Meesage/Qeue
   //BaL1 = xQueueCreate( 5, sizeof( QMessage ) );
@@ -302,28 +170,20 @@ uint8_t message[] = {"On va commencer\r\n"};
   /* Create the task, storing the handle. */
 
    printf("T0: Creation tache 1\r\n");
-	  xReturned = xTaskCreate(
-					  //(void *)fonction2,       	/* Function that implements the task. */
-					  //"fonction2",     	/* Text name for the task. */
-					  //(void *)Recepteur,
-					  //"RX",
-	  	  	  	  	  (void *)FctBidon,
-			  	  	  "FctBidon",
-					  1000,      		/* Stack size in words, not bytes. */
-					  NULL,    			/* Parameter passed into the task. */
-					  p2,				/* Priority at which the task is created. */
-					  &xHandle );      /* Used to pass out the created task's handle. */
-	  if( xReturned == pdPASS )
-	  printf("T0: Tache ''Bidon'' cree avec priorite %d\r\n", p1);
+  xReturned = xTaskCreate(
+				  (void*)FctBidon,
+				  "FctBidon",
+				  1000,      		/* Stack size in words, not bytes. */
+				  NULL,    			/* Parameter passed into the task. */
+				  p1,				/* Priority at which the task is created. */
+				  &xHandle );      /* Used to pass out the created task's handle. */
+  if( xReturned == pdPASS )
+  printf("T0: Tache ''Bidon'' cree avec priorite %d\r\n", p1);
 
 
   printf("T0: Creation tache 2\r\n");
   xReturned = xTaskCreate(
-		  	  	  //(void *)fonction2,       	/* Function that implements the task. */
-				  //"fonction2",     	/* Text name for the task. */
-		  	  	  //(void *)Recepteur,
-				  //"RX",
-		  	  	  (void*)shell_run(),
+		  	  	  (void*)shell_run,
 				  "Shell_RUN",
 		  	  	  1000,      		/* Stack size in words, not bytes. */
 				  NULL,    			/* Parameter passed into the task. */
@@ -332,20 +192,10 @@ uint8_t message[] = {"On va commencer\r\n"};
   if( xReturned == pdPASS )
 	  printf("T0: Tache ''Shell RUN'' cree avec priorite %d\r\n", p2);
 
-
   printf("T0: Fin fct main x_x\r\n\n");
-
-
-  HAL_GPIO_WritePin(GPIOG, LD3_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOG, LD4_Pin, GPIO_PIN_SET);
-  HAL_Delay(500);
-  HAL_GPIO_WritePin(GPIOG, LD3_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOG, LD4_Pin, GPIO_PIN_RESET);
-  HAL_Delay(500);
 
   //Initier le timer TIM2
   HAL_TIM_Base_Start_IT (&htim2);
-
 
   /* USER CODE END 2 */
 
@@ -357,30 +207,6 @@ uint8_t message[] = {"On va commencer\r\n"};
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-
-  //!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!
-  //Si FreeRTOS est démaré (cf. osKernelStart() ci-dessous)
-  //le code dessous ne s'executera pas :-(
-  //!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!
-//  while (1)
-//    {
-//  	  if (HAL_OK == HAL_UART_Receive(&huart1, &bidon, sizeof(bidon), 0xff))
-//  	  {
-//  		  bidon = bidon + 0x20;
-//  		  HAL_UART_Transmit(&huart1, &bidon, sizeof(bidon), 0xff);
-//  		  bidon=0x3;
-//  	  }
-
-
-  	  if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin)) HAL_GPIO_WritePin(GPIOG, LD3_Pin, GPIO_PIN_SET);
-  	        else HAL_GPIO_WritePin(GPIOG, LD3_Pin, GPIO_PIN_RESET);
-//  	 HAL_GPIO_WritePin(GPIOG, LD3_Pin, GPIO_PIN_RESET);
-//  	  HAL_GPIO_WritePin(GPIOG, LD4_Pin, GPIO_PIN_SET);
-//  	  HAL_Delay(100);
-//  	  HAL_GPIO_WritePin(GPIOG, LD3_Pin, GPIO_PIN_SET);
-//  	  HAL_GPIO_WritePin(GPIOG, LD4_Pin, GPIO_PIN_RESET);
-//  	  HAL_Delay(100);
 
     /* USER CODE END WHILE */
 

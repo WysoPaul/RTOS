@@ -189,7 +189,7 @@ void EXTI0_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
-	printf("IT: TIMER #2 a claqué\r\n");		//A ne pas faire dans la vrai vie, c'est juste pour l'exo
+	//printf("IT: TIMER #2 a claqué\r\n");		//A ne pas faire dans la vrai vie, c'est juste pour l'exo
 	HAL_GPIO_TogglePin(GPIOG, LD3_Pin);
 	xSemaphoreGiveFromISR(MonSem,pdFALSE);
 
