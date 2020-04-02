@@ -1,0 +1,10 @@
+main.c:134:6:fonction3	24	static
+main.c:80:5:__io_putchar	16	static
+main.c:89:6:fonction1	24	static
+main.c:110:6:fonction2	24	static
+main.c:159:6:Emeteur	48	static
+main.c:185:6:Recepteur	48	static
+main.c:373:6:SystemClock_Config	144	static
+main.c:224:5:main	48	static
+main.c:432:6:HAL_TIM_PeriodElapsedCallback	0	static
+main.c:449:6:Error_Handler	0	static
