@@ -73,6 +73,7 @@ void MX_FREERTOS_Init(void);
 SemaphoreHandle_t MonSem, MonSemUART;
 char QMessage[20];
 QueueHandle_t  BaL1;
+char prompt[] = " > ";
 
 
 
@@ -84,25 +85,55 @@ int __io_putchar(int ch)
 }
 
 
-
-//Fonction qui simule une activité...
-void FctBidon(void)
-{
-	int i=0;
+/////////////////////////////////////////////////////////////////////////////////////////
+// FCT DISPLAY SPINNING WHEEL
+// Handy function to show user the app is running (and not stuck)
+//
+// @PARAM: none
+//
+// @RETURN: none
+//
+/////////////////////////////////////////////////////////////////////////////////////////
+void displaySpiningWheel(void){
 	printf("T1: BONJOUR\r\n");
+	char i = 1;
 	while (1)
 	{
-		printf(". ");
-		fflush(stdout);
-		vTaskDelay(500);
-
+		switch (i)
+			{
+			case 1:
+				//printf("|\033[1D>");
+				sprintf(prompt,"\r|>");
+				printf("%s",prompt);
+//				printf("\r|>");
+				fflush(stdout);
+				break;
+			case 2:
+				//printf("/\033[1D>");
+				sprintf(prompt,"\r/>");
+				printf("%s",prompt);
+				fflush(stdout);
+				break;
+			case 3:
+				//printf("-\033[1D>");
+				sprintf(prompt,"\r->");
+				printf("%s",prompt);
+				fflush(stdout);
+				break;
+			case 4:
+				//printf("\\\033[1D>");
+				sprintf(prompt,"\r\\>");
+				printf("%s",prompt);
+				fflush(stdout);
+				break;
+			default:
+				i = 1;
+			}
+	i = ++i > 4  ? 1 : i ;
+	vTaskDelay(100);
 	}
 	vTaskDelete(NULL);
 }
-
-
-
-
 
 
 /* USER CODE END 0 */
@@ -153,8 +184,8 @@ uint8_t message[] = {"On va commencer\r\n"};
 
   BaseType_t xReturned;
   TaskHandle_t xHandle = NULL;
-  int p1=3;
-  int p2=5;
+  int p1=1;
+  int p2=2;
 
   //Création d'un Meesage/Qeue
   //BaL1 = xQueueCreate( 5, sizeof( QMessage ) );
@@ -171,8 +202,8 @@ uint8_t message[] = {"On va commencer\r\n"};
 
    printf("T0: Creation tache 1\r\n");
   xReturned = xTaskCreate(
-				  (void*)FctBidon,
-				  "FctBidon",
+				  (void*)displaySpiningWheel,
+				  "SpiningWheel",
 				  1000,      		/* Stack size in words, not bytes. */
 				  NULL,    			/* Parameter passed into the task. */
 				  p1,				/* Priority at which the task is created. */

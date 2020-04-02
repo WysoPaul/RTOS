@@ -11,6 +11,6 @@
 #include "semphr.h"
 
 extern SemaphoreHandle_t MonSem, MonSemUART;
-
+extern char prompt[2];
 
 #endif /* INC_LIBPERSO_H_ */

@@ -15,7 +15,7 @@
 
 
 #define ARGC_MAX 8
-char help[] = "This is help message";
+char help[] = "This is help message\r\n";
 
 typedef struct{
     char c;
@@ -30,7 +30,7 @@ int dataReady = 0;
 
 
 /******************************************
- * UART READ
+ * UART READ without IT
  *
  ******************************************/
 
@@ -41,12 +41,10 @@ char uart_read() {
 //	while (!dataReady);
 //	dataReady = 0;
 
-//	while(HAL_UART_Receive(&UART_DEVICE, (uint8_t*)(&c), 1, 0xFFFFFFFF) == HAL_TIMEOUT)
-//	{
-//		printf("HAL_UART_Receive timeout. This should not cause any issue.\r\n");
-//	}
-
-	while(HAL_OK != HAL_UART_Receive_IT(&UART_DEVICE, (uint8_t*)(&c), 1));
+	while(HAL_UART_Receive(&UART_DEVICE, (uint8_t*)(&c), 1, 0xFFFFFFFF) == HAL_TIMEOUT)
+	{
+		printf("HAL_UART_Receive timeout. This should not cause any issue.\r\n");
+	}
 
 	return c;
 }
@@ -66,6 +64,7 @@ int uart_write(char * s, uint16_t size) {
 /******************************************
  * UART DATA READY
  *
+ *... unused
  ******************************************/
 
 void uart_data_ready() {
@@ -155,8 +154,7 @@ int shell_exec(char c, char * buf)
 
 char buf[40];
 char backspace[] = "\b \b";
-char prompt[] = "> ";
-char toto[10];
+
 
 /******************************************
  * SHELL RUN
@@ -165,6 +163,7 @@ char toto[10];
 int shell_run(){
 	int reading = 0;
 	int pos = 0;
+	char c = 0;
 
 	printf("Debut Shell_Run\r\n");
 
@@ -174,11 +173,8 @@ int shell_run(){
 		  reading = 1;
 
 		  while(reading){
-			  printf("Je demande le semaphore\r\n");
-			  HAL_UART_Receive_IT(&UART_DEVICE, (uint8_t*)(&toto), 1);
-			  xSemaphoreTake(MonSemUART, portMAX_DELAY);
-			  printf("Je lit l'UART\r\n");
-			  char c = uart_read();
+			  HAL_UART_Receive_IT(&UART_DEVICE, (uint8_t*)&c, 1);	//Amorcage de la lecture UART
+			  xSemaphoreTake(MonSemUART, portMAX_DELAY);			//Attente du sémaphore ...
 
 			  switch (c) {
 				  //process RETURN key

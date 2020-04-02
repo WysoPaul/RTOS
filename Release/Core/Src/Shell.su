@@ -1,8 +1,8 @@
-Shell.c:81:5:sh_help	24	static
+Shell.c:87:5:sh_help	24	static
 Shell.c:37:6:uart_read	24	static
-Shell.c:60:5:uart_write	8	static
-Shell.c:71:6:uart_data_ready	0	static
-Shell.c:112:5:shell_add	20	static
-Shell.c:96:6:shell_init	8	static
-Shell.c:129:5:shell_exec	48	static
-Shell.c:165:5:shell_run	32	static
+Shell.c:66:5:uart_write	8	static
+Shell.c:77:6:uart_data_ready	0	static
+Shell.c:118:5:shell_add	20	static
+Shell.c:102:6:shell_init	8	static
+Shell.c:135:5:shell_exec	48	static
+Shell.c:171:5:shell_run	40	static
