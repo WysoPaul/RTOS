@@ -21,10 +21,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "adc.h"
 #include "crc.h"
+#include "dac.h"
 #include "dma2d.h"
 #include "i2c.h"
-#include "ltdc.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -73,7 +74,7 @@ void MX_FREERTOS_Init(void);
 SemaphoreHandle_t MonSem, MonSemUART;
 char QMessage[20];
 QueueHandle_t  BaL1;
-char prompt[] = " > ";
+//char prompt[] = " > ";
 
 
 
@@ -170,12 +171,13 @@ uint8_t message[] = {"On va commencer\r\n"};
   MX_DMA2D_Init();
   MX_FMC_Init();
   MX_I2C3_Init();
-  MX_LTDC_Init();
   MX_SPI5_Init();
   MX_TIM1_Init();
   MX_USART1_UART_Init();
   MX_USB_OTG_HS_HCD_Init();
   MX_TIM2_Init();
+  MX_ADC1_Init();
+  MX_DAC_Init();
   /* USER CODE BEGIN 2 */
 
   //HAL_UART_Transmit(&huart1, message, sizeof(message), 0xff);
@@ -195,35 +197,40 @@ uint8_t message[] = {"On va commencer\r\n"};
   //MonSem=semBCreate(SEM_Q_FIFO,SEM_EMPTY);		//Façon VxWorks
   MonSem = xSemaphoreCreateBinary();				//Façon FreeRTOS
   MonSemUART = xSemaphoreCreateBinary();				//Façon FreeRTOS
-  shell_init();
+  //shell_init();
 
 
   /* Create the task, storing the handle. */
 
+  /* ------------------------------ CREATION desw TACHES ------------------------------------------
+   * ==============================================================================================
    printf("T0: Creation tache 1\r\n");
   xReturned = xTaskCreate(
 				  (void*)displaySpiningWheel,
 				  "SpiningWheel",
-				  1000,      		/* Stack size in words, not bytes. */
-				  NULL,    			/* Parameter passed into the task. */
-				  p1,				/* Priority at which the task is created. */
-				  &xHandle );      /* Used to pass out the created task's handle. */
+				  1000,      		/* Stack size in words, not bytes.
+				  NULL,    			/* Parameter passed into the task.
+				  p1,				/* Priority at which the task is created.
+				  &xHandle );      /* Used to pass out the created task's handle.
   if( xReturned == pdPASS )
   printf("T0: Tache ''Bidon'' cree avec priorite %d\r\n", p1);
-
+*/
 
   printf("T0: Creation tache 2\r\n");
   xReturned = xTaskCreate(
-		  	  	  (void*)shell_run,
-				  "Shell_RUN",
-		  	  	  1000,      		/* Stack size in words, not bytes. */
-				  NULL,    			/* Parameter passed into the task. */
-				  p2,				/* Priority at which the task is created. */
-				  &xHandle );      /* Used to pass out the created task's handle. */
+		  	  	  (void*)Test,				/* RENSEINGER ICI la FONCTION A LANCER ....*/
+				  "Test",
+		  	  	  1000,      		/* Stack size in words, not bytes.*/
+				  NULL,    			/* Parameter passed into the task.*/
+				  p2,				/* Priority at which the task is created.*/
+				  &xHandle );       /* Used to pass out the created task's handle.*/
   if( xReturned == pdPASS )
-	  printf("T0: Tache ''Shell RUN'' cree avec priorite %d\r\n", p2);
+	  printf("T0: Tache ''test'' cree avec priorite %d\r\n", p2);
 
   printf("T0: Fin fct main x_x\r\n\n");
+
+   /* ==============================================================================================
+  -----------------------------------------------------------------------------------------------*/
 
   //Initier le timer TIM2
   HAL_TIM_Base_Start_IT (&htim2);
@@ -238,6 +245,8 @@ uint8_t message[] = {"On va commencer\r\n"};
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+
 
     /* USER CODE END WHILE */
 
@@ -255,7 +264,6 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage 
   */
@@ -285,14 +293,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC;
-  PeriphClkInitStruct.PLLSAI.PLLSAIN = 50;
-  PeriphClkInitStruct.PLLSAI.PLLSAIR = 2;
-  PeriphClkInitStruct.PLLSAIDivR = RCC_PLLSAIDIVR_2;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
   }

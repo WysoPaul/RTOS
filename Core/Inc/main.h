@@ -100,8 +100,6 @@ void Error_Handler(void);
 #define MEMS_INT1_GPIO_Port GPIOA
 #define MEMS_INT2_Pin GPIO_PIN_2
 #define MEMS_INT2_GPIO_Port GPIOA
-#define B5_Pin GPIO_PIN_3
-#define B5_GPIO_Port GPIOA
 #define VSYNC_Pin GPIO_PIN_4
 #define VSYNC_GPIO_Port GPIOA
 #define G2_Pin GPIO_PIN_6

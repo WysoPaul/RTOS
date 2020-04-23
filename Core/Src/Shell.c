@@ -15,7 +15,8 @@
 
 
 #define ARGC_MAX 8
-char help[] = "This is help message\r\n";
+char help[] = "This is help message";
+char ls[] = "Afficher la liste des fichiers";
 
 typedef struct{
     char c;
@@ -86,6 +87,20 @@ int sh_help(int argc, char ** argv) {
     return 0;
 }
 
+/******************************************
+ * SHELL list
+ *
+ ******************************************/
+
+int sh_ls(int argc, char ** argv) {
+    printf("Merci d'avoir lance la CMD 'l' pour lister les ficheir\r\nMais en faite il n'y a pas de système de fichier d'installe.\r\nDesole :'-(\r\n");
+
+    return 0;
+}
+
+
+
+
 
 /******************************************
  * SHELL INIT
@@ -96,6 +111,8 @@ void shell_init() {
 	printf("\r\n\r\n===== Monsieur Shell v0.2 =====\r\n");
 
 	shell_add('h', sh_help, help);
+	shell_add('l', sh_ls, ls);
+
 
 	for (int i = 0 ; i < 3 ; i++) {
 

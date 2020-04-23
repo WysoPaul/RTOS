@@ -13,4 +13,7 @@
 extern SemaphoreHandle_t MonSem, MonSemUART;
 extern char prompt[2];
 
+void Test(void);
+
+
 #endif /* INC_LIBPERSO_H_ */
